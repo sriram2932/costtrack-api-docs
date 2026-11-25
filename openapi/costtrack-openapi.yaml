@@ -1,0 +1,481 @@
+openapi: 3.0.3
+info:
+  title: CostTrack API
+  version: 1.1.0
+  description: |
+    Bill-of-quantities and cost-estimation API for construction projects.
+    Read a project's priced BOQ, submit a cost estimate as a draft for
+    review, and get a rolled-up cost summary by trade.
+
+    Portfolio sample, not a live product. CostTrack is fictional. This
+    specification describes the same API as docs/api-reference.md; if a
+    detail differs, the API reference is the source of truth.
+  contact:
+    name: Sriram Balasubramanian
+servers:
+  - url: https://api.costtrack.example/v1
+    description: CostTrack API
+security:
+  - bearerAuth: []
+tags:
+  - name: BOQ
+    description: Read bill-of-quantities items for a project.
+  - name: Estimates
+    description: Submit cost estimates as drafts for review.
+  - name: Summary
+    description: Rolled-up project cost by trade.
+paths:
+  /projects/{project_id}/boq:
+    get:
+      tags: [BOQ]
+      summary: List BOQ items
+      description: Get every priced BOQ item for a project, in bill order.
+      operationId: listBoqItems
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: proj_01J8X
+          description: The project ID.
+        - name: page
+          in: query
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+          description: Page number, starting at 1.
+        - name: per_page
+          in: query
+          schema:
+            type: integer
+            default: 50
+            minimum: 1
+            maximum: 100
+          description: Items per page. Maximum 100.
+        - name: trade
+          in: query
+          schema:
+            type: string
+            example: concrete
+          description: Filter by trade, e.g. concrete, steel, finishes.
+      responses:
+        "200":
+          description: Priced BOQ items for the project.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BoqList"
+              example:
+                project_id: proj_01J8X
+                currency: SGD
+                page: 1
+                per_page: 2
+                total_items: 37
+                items:
+                  - item_no: "3.1"
+                    description: Grade 40 reinforced concrete, columns
+                    unit: m3
+                    quantity: 120.5
+                    rate: 185.00
+                    amount: 22292.50
+                    trade: concrete
+                  - item_no: "3.2"
+                    description: Grade 40 reinforced concrete, beams
+                    unit: m3
+                    quantity: 86.0
+                    rate: 185.00
+                    amount: 15910.00
+                    trade: concrete
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /projects/{project_id}/boq/{item_no}:
+    get:
+      tags: [BOQ]
+      summary: Get a BOQ item
+      description: Get one BOQ item by its item number.
+      operationId: getBoqItem
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: proj_01J8X
+        - name: item_no
+          in: path
+          required: true
+          schema:
+            type: string
+            example: "3.1"
+          description: The BOQ item number. URL-encode it if it contains spaces.
+      responses:
+        "200":
+          description: The BOQ item.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BoqItem"
+              example:
+                item_no: "3.1"
+                description: Grade 40 reinforced concrete, columns
+                unit: m3
+                quantity: 120.5
+                rate: 185.00
+                amount: 22292.50
+                trade: concrete
+                updated_at: "2026-11-10T09:30:00+08:00"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /projects/{project_id}/estimates:
+    post:
+      tags: [Estimates]
+      summary: Create a cost estimate
+      description: |
+        Submit a new cost estimate for a project. The estimate is saved as
+        a draft and must be reviewed in the CostTrack dashboard before it
+        becomes the live estimate. Creating one never overwrites the
+        current priced BOQ. If any item fails validation, the whole
+        request is rejected and no partial estimate is saved.
+      operationId: createEstimate
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: proj_01J8X
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/EstimateCreate"
+            example:
+              title: November re-measure
+              items:
+                - description: Grade 40 reinforced concrete, columns
+                  unit: m3
+                  quantity: 120.5
+                  rate: 185.00
+              notes: Re-measured from Revit model rev C.
+      responses:
+        "201":
+          description: Draft estimate created.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Estimate"
+              example:
+                estimate_id: est_9K2M4Q
+                project_id: proj_01J8X
+                title: November re-measure
+                status: draft
+                total_amount: 22292.50
+                currency: SGD
+                created_at: "2026-11-18T09:00:00+08:00"
+        "400":
+          $ref: "#/components/responses/BadRequest"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+  /projects/{project_id}/summary:
+    get:
+      tags: [Summary]
+      summary: Get a project cost summary
+      description: |
+        Get the rolled-up cost of a project: the live estimate total,
+        broken down by trade, with the draft estimate total shown
+        separately if one exists.
+      operationId: getProjectSummary
+      parameters:
+        - name: project_id
+          in: path
+          required: true
+          schema:
+            type: string
+            example: proj_01J8X
+      responses:
+        "200":
+          description: Project cost summary.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CostSummary"
+              example:
+                project_id: proj_01J8X
+                currency: SGD
+                live_total: 1842500.00
+                by_trade:
+                  - trade: concrete
+                    total: 642300.00
+                  - trade: steel
+                    total: 518400.00
+                  - trade: finishes
+                    total: 681800.00
+                draft_estimate:
+                  estimate_id: est_9K2M4Q
+                  total_amount: 22292.50
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "429":
+          $ref: "#/components/responses/RateLimited"
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      description: |
+        Bearer token in the Authorization header. Get a token from the
+        CostTrack dashboard under Settings -> API keys. Tokens expire
+        after 90 days.
+  schemas:
+    BoqItem:
+      type: object
+      required: [item_no, description, unit, quantity, rate, amount, trade]
+      properties:
+        item_no:
+          type: string
+          example: "3.1"
+          description: The BOQ item number.
+        description:
+          type: string
+          example: Grade 40 reinforced concrete, columns
+        unit:
+          type: string
+          example: m3
+          description: Unit of measurement, e.g. m3, m2, nr.
+        quantity:
+          type: number
+          example: 120.5
+        rate:
+          type: number
+          example: 185.00
+          description: Unit rate in the project currency.
+        amount:
+          type: number
+          example: 22292.50
+          description: quantity x rate, rounded to 2 decimal places.
+        trade:
+          type: string
+          example: concrete
+        updated_at:
+          type: string
+          format: date-time
+          example: "2026-11-10T09:30:00+08:00"
+    BoqList:
+      type: object
+      required: [project_id, currency, page, per_page, total_items, items]
+      properties:
+        project_id:
+          type: string
+          example: proj_01J8X
+        currency:
+          type: string
+          example: SGD
+        page:
+          type: integer
+          example: 1
+        per_page:
+          type: integer
+          example: 2
+        total_items:
+          type: integer
+          example: 37
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/BoqItem"
+    EstimateItem:
+      type: object
+      required: [description, unit, quantity, rate]
+      properties:
+        description:
+          type: string
+          example: Grade 40 reinforced concrete, columns
+        unit:
+          type: string
+          example: m3
+        quantity:
+          type: number
+          exclusiveMinimum: 0
+          example: 120.5
+          description: Must be greater than 0.
+        rate:
+          type: number
+          minimum: 0
+          example: 185.00
+          description: Unit rate in the project currency. Must be 0 or greater.
+    EstimateCreate:
+      type: object
+      required: [title, items]
+      properties:
+        title:
+          type: string
+          maxLength: 120
+          example: November re-measure
+          description: A short name for the estimate.
+        items:
+          type: array
+          minItems: 1
+          items:
+            $ref: "#/components/schemas/EstimateItem"
+        notes:
+          type: string
+          maxLength: 1000
+          example: Re-measured from Revit model rev C.
+          description: Free-text notes for the reviewer.
+    Estimate:
+      type: object
+      required: [estimate_id, project_id, title, status, total_amount, currency, created_at]
+      properties:
+        estimate_id:
+          type: string
+          example: est_9K2M4Q
+        project_id:
+          type: string
+          example: proj_01J8X
+        title:
+          type: string
+          example: November re-measure
+        status:
+          type: string
+          enum: [draft]
+          example: draft
+        total_amount:
+          type: number
+          example: 22292.50
+          description: Sum of quantity x rate across all items.
+        currency:
+          type: string
+          example: SGD
+        created_at:
+          type: string
+          format: date-time
+          example: "2026-11-18T09:00:00+08:00"
+    TradeTotal:
+      type: object
+      required: [trade, total]
+      properties:
+        trade:
+          type: string
+          example: concrete
+        total:
+          type: number
+          example: 642300.00
+    DraftEstimate:
+      type: object
+      required: [estimate_id, total_amount]
+      properties:
+        estimate_id:
+          type: string
+          example: est_9K2M4Q
+        total_amount:
+          type: number
+          example: 22292.50
+    CostSummary:
+      type: object
+      required: [project_id, currency, live_total, by_trade, draft_estimate]
+      properties:
+        project_id:
+          type: string
+          example: proj_01J8X
+        currency:
+          type: string
+          example: SGD
+        live_total:
+          type: number
+          example: 1842500.00
+          description: Live estimate total. by_trade totals always add up to this.
+        by_trade:
+          type: array
+          items:
+            $ref: "#/components/schemas/TradeTotal"
+        draft_estimate:
+          nullable: true
+          allOf:
+            - $ref: "#/components/schemas/DraftEstimate"
+          description: Null when no draft exists.
+    ApiError:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: object
+          required: [code, message]
+          properties:
+            code:
+              type: string
+              example: invalid_quantity
+              description: >-
+                One of invalid_quantity, invalid_rate, missing_field,
+                invalid_field, unauthorized, not_found, rate_limited,
+                server_error.
+            message:
+              type: string
+              example: quantity must be greater than 0.
+            field:
+              type: string
+              example: items[0].quantity
+              description: Present when the error names a request field.
+  responses:
+    BadRequest:
+      description: A field failed validation. Fix the named field and retry. The request was not saved.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiError"
+          example:
+            error:
+              code: invalid_quantity
+              message: quantity must be greater than 0.
+              field: items[0].quantity
+    Unauthorized:
+      description: Missing, expired or revoked token. Get a new token from the dashboard.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiError"
+          example:
+            error:
+              code: unauthorized
+              message: Missing, expired or revoked token.
+    NotFound:
+      description: The project or item number does not exist, or you do not have access to it.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiError"
+          example:
+            error:
+              code: not_found
+              message: Project or item not found.
+    RateLimited:
+      description: Over 100 requests per minute. Wait and retry; the response includes a Retry-After header in seconds.
+      headers:
+        Retry-After:
+          schema:
+            type: integer
+          description: Seconds to wait before retrying.
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/ApiError"
+          example:
+            error:
+              code: rate_limited
+              message: Too many requests. Retry after 30 seconds.
