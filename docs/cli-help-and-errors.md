@@ -1,11 +1,11 @@
-# CostTrack CLI — Help Text and Error Messages (Sample)
+# CostTrack CLI, Help Text and Error Messages (Sample)
 
 > **Portfolio sample, not a live product.** Written by Sriram Balasubramanian as a
 > developer-documentation sample for technical-writer applications (Mercor Technical
 > Writer, AfterQuery Technical Writer Expert, Ethos AI Technical Writer).
 > CostTrack is a fictional bill-of-quantities / cost-estimation tool, chosen so the
-> examples use real quantity-surveying knowledge — BOQ items, rates, quantities and
-> cost summaries — rather than invented tech-company experience. It is the companion
+> examples use real quantity-surveying knowledge, BOQ items, rates, quantities and
+> cost summaries, rather than invented tech-company experience. It is the companion
 > to the CostTrack API reference (`api-reference-boq-api.md`): same project
 > (`proj_01J8X`), same data, same error codes where they overlap.
 > Status: draft for Sriram's review, 18 Nov 2026. Not published anywhere yet.
@@ -14,7 +14,7 @@
 
 `costtrack` is a command-line tool for working with a project's priced BOQ
 without opening the dashboard. Read BOQ items, check a project cost summary,
-and submit a cost estimate as a draft for review — creating an estimate never
+and submit a cost estimate as a draft for review, creating an estimate never
 overwrites the live priced BOQ.
 
 Install it, then sign in once with `costtrack auth login`. The CLI stores the
@@ -31,7 +31,7 @@ costtrack auth login
 This is the full top-level help output, exactly as a user would see it:
 
 ```text
-costtrack — work with a project's BOQ from the command line
+costtrack, work with a project's BOQ from the command line
 
 Usage:
   costtrack <command> [options]
@@ -56,7 +56,7 @@ Examples:
 ### `costtrack boq --help`
 
 ```text
-costtrack boq — read BOQ items for a project
+costtrack boq, read BOQ items for a project
 
 Usage:
   costtrack boq list --project <id> [--trade <trade>] [--page <n>] [--per-page <n>]
@@ -66,7 +66,7 @@ Options:
   --project <id>   Project ID, e.g. proj_01J8X (required)
   --trade <trade>  Filter list by trade, e.g. concrete, steel, finishes
   --page <n>       Page number, starting at 1 (default: 1)
-  --per-page <n>   Items per page, 1–100 (default: 50)
+  --per-page <n>   Items per page, 1-100 (default: 50)
   --item <item-no> BOQ item number, e.g. 3.1 (required for `get`)
 
 Examples:
@@ -77,7 +77,7 @@ Examples:
 ### `costtrack estimate --help`
 
 ```text
-costtrack estimate — create a cost estimate for a project
+costtrack estimate, create a cost estimate for a project
 
 Usage:
   costtrack estimate create --project <id> --title <text> --file <path>
@@ -92,7 +92,7 @@ Options:
 
 The estimate is saved as a draft and must be reviewed in the dashboard
 before it becomes the live estimate. If any item fails validation, the
-whole estimate is rejected — no partial estimate is saved.
+whole estimate is rejected, no partial estimate is saved.
 
 Example:
   costtrack estimate create --project proj_01J8X \
@@ -102,7 +102,7 @@ Example:
 ### `costtrack summary --help`
 
 ```text
-costtrack summary — show a project's rolled-up cost
+costtrack summary, show a project's rolled-up cost
 
 Usage:
   costtrack summary --project <id>
@@ -120,14 +120,14 @@ Example:
 ### `costtrack auth --help`
 
 ```text
-costtrack auth — sign in and manage your API token
+costtrack auth, sign in and manage your API token
 
 Usage:
   costtrack auth login
   costtrack auth logout
 
 `login` opens the CostTrack dashboard so you can approve the CLI, then
-stores the token on this machine. Tokens expire after 90 days — run
+stores the token on this machine. Tokens expire after 90 days. Run
 `login` again when the CLI tells you the token has expired.
 ```
 
@@ -155,7 +155,7 @@ Live total:      1,842,500.00
   concrete:        642,300.00
   steel:           518,400.00
   finishes:        681,800.00
-Draft estimate:  est_9K2M4Q — 22,292.50 (November re-measure)
+Draft estimate:  est_9K2M4Q, 22,292.50 (November re-measure)
 ```
 
 `amount` is always `quantity × rate`, rounded to 2 decimal places.
@@ -182,7 +182,7 @@ Run `costtrack auth login` and try again.
 ```text
 Error: project proj_01J8X was not found. (not_found)
 
-Check the project ID — it is case-sensitive — and that you have access
+Check the project ID, it is case-sensitive, and that you have access
 to the project. To list the projects you can access, open the CostTrack
 dashboard.
 ```
@@ -199,7 +199,7 @@ Check the item number and project ID. Use
 ### 3. Invalid estimate item (`invalid_quantity`)
 
 ```text
-Error: estimate not created — quantity must be greater than 0.
+Error: estimate not created, quantity must be greater than 0.
 (invalid_quantity, field: items[0].quantity)
 
 Fix the quantity in estimate.json and run the command again. Nothing
@@ -212,7 +212,7 @@ The same pattern covers `invalid_rate` ("rate must be 0 or greater") and
 ### 4. Rate limited (`rate_limited`)
 
 ```text
-Error: too many requests — you have exceeded 100 requests per minute.
+Error: too many requests, you have exceeded 100 requests per minute.
 (rate_limited)
 
 Wait 30 seconds and try again. If you are running the CLI in a script,
