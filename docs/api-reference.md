@@ -1,11 +1,11 @@
-# CostTrack API — API Reference (Sample)
+# CostTrack API, API Reference (Sample)
 
 > **Portfolio sample, not a live product.** Written by Sriram Balasubramanian as a
 > developer-documentation sample for technical-writer applications (Mercor Technical
 > Writer, AfterQuery Technical Writer Expert, Ethos AI Technical Writer).
 > CostTrack is a fictional bill-of-quantities / cost-estimation API, chosen so the
-> examples use real quantity-surveying knowledge — BOQ items, rates, quantities and
-> cost summaries — rather than invented tech-company experience.
+> examples use real quantity-surveying knowledge, BOQ items, rates, quantities and
+> cost summaries, rather than invented tech-company experience.
 > Status: draft for Sriram's review, 18 Nov 2026. Not published anywhere yet.
 
 ## Overview
@@ -33,7 +33,7 @@ curl https://api.costtrack.example/v1/projects/proj_01J8X/boq \
   -H "Authorization: Bearer <your-api-token>"
 ```
 
-Returns the priced BOQ for project `proj_01J8X` — see
+Returns the priced BOQ for project `proj_01J8X`, see
 [List BOQ items](#list-boq-items).
 
 ---
@@ -58,7 +58,7 @@ GET /projects/{project_id}/boq
 |---|---|---|---|
 | `page` | integer | `1` | Page number, starting at 1. |
 | `per_page` | integer | `50` | Items per page. Maximum `100`. |
-| `trade` | string | — | Filter by trade, e.g. `concrete`, `steel`, `finishes`. |
+| `trade` | string | - | Filter by trade, e.g. `concrete`, `steel`, `finishes`. |
 
 ### Example request
 
@@ -67,7 +67,7 @@ curl "https://api.costtrack.example/v1/projects/proj_01J8X/boq?trade=concrete&pe
   -H "Authorization: Bearer <your-api-token>"
 ```
 
-### Example response — `200 OK`
+### Example response, `200 OK`
 
 ```json
 {
@@ -100,7 +100,7 @@ curl "https://api.costtrack.example/v1/projects/proj_01J8X/boq?trade=concrete&pe
 ```
 
 `amount` is always `quantity × rate`, rounded to 2 decimal places. Do not
-recalculate it client-side — use the value returned.
+recalculate it client-side, use the value returned.
 
 ---
 
@@ -126,7 +126,7 @@ curl https://api.costtrack.example/v1/projects/proj_01J8X/boq/3.1 \
   -H "Authorization: Bearer <your-api-token>"
 ```
 
-### Example response — `200 OK`
+### Example response, `200 OK`
 
 ```json
 {
@@ -149,7 +149,7 @@ Returns `404` if the item number does not exist in that project.
 
 Submit a new cost estimate for a project. The estimate is saved as **draft**
 and must be reviewed in the CostTrack dashboard before it becomes the live
-estimate — creating one never overwrites the current priced BOQ.
+estimate, creating one never overwrites the current priced BOQ.
 
 ```http
 POST /projects/{project_id}/estimates
@@ -187,7 +187,7 @@ curl -X POST https://api.costtrack.example/v1/projects/proj_01J8X/estimates \
   }'
 ```
 
-### Example response — `201 Created`
+### Example response, `201 Created`
 
 ```json
 {
@@ -202,7 +202,7 @@ curl -X POST https://api.costtrack.example/v1/projects/proj_01J8X/estimates \
 ```
 
 `total_amount` is the sum of `quantity × rate` across all items. If any item
-fails validation, the whole request is rejected — no partial estimate is saved.
+fails validation, the whole request is rejected, no partial estimate is saved.
 
 ---
 
@@ -222,7 +222,7 @@ curl https://api.costtrack.example/v1/projects/proj_01J8X/summary \
   -H "Authorization: Bearer <your-api-token>"
 ```
 
-### Example response — `200 OK`
+### Example response, `200 OK`
 
 ```json
 {
