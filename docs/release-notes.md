@@ -1,4 +1,4 @@
-# CostTrack release notes — v1.1.0 (18 November 2026)
+# CostTrack release notes, v1.1.0 (18 November 2026)
 
 > **Portfolio sample, not a live product.** CostTrack is a fictional bill-of-quantities and cost-estimation API. These notes are a documentation sample.
 
