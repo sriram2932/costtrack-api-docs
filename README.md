@@ -25,6 +25,8 @@ CostTrack lets an application read and create bill-of-quantities (BOQ) items and
 
 Technical-writer roles ask for a developer-docs portfolio: an API reference, CLI help text, and a how-to guide, all in Markdown. I built this one around cost estimation because that is my real background: 2 years in construction quantity surveying, cost estimation, tender preparation and contract administration. The examples use real QS knowledge, BOQ items, rates, quantities and cost summaries, rather than invented tech-company experience.
 
+The working API that matches these docs is in the [costtrack-api](https://github.com/sriram2932/costtrack-api) repo. Same project, same data, same error codes.
+
 ## Status
 
 Draft for review, November 2026. The API, the CLI and the company are fictional. Nothing here connects to a real service.
